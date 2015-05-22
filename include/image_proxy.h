@@ -1,6 +1,8 @@
 #ifndef IMAGE_PROXY_H
 #define IMAGE_PROXY_H
 
+#include <deque>
+
 #include "lms/module.h"
 #include "lms/datamanager.h"
 #include "lms/imaging/image.h"
@@ -37,11 +39,16 @@ private:
     DisplayMode displayMode;
     PlayMode playMode;
 
-    std::string singleFile;
-
+    // for displayMode DIRECTORY
     std::string directory;
     std::vector<std::string> dirFiles;
     size_t dirFilesIndex;
+
+    // for displayMode IMAGE_CHANNEL
+    size_t maxBufferSize;
+    std::deque<lms::imaging::Image> historyBuffer;
+    std::deque<lms::imaging::Image> futureBuffer;
+    int bufferIndex;
 
     const lms::imaging::Image *inputImage;
     lms::imaging::Image *outputImage;
@@ -53,6 +60,7 @@ private:
 
     void fetchMessages();
     static void loadDirectory(const std::string &dir, std::vector<std::string>& files);
+    static void drawFailImage(lms::imaging::Image &image);
 };
 
 #endif /* IMAGE_PROXY_H */

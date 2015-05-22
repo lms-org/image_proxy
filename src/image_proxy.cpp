@@ -15,6 +15,8 @@ bool ImageProxy::initialize() {
     displayMode = DIRECTORY;
     playMode = PLAY;
 
+    maxBufferSize = config->get<int>("maxBufferSize", 1000);
+
     return true;
 }
 
@@ -44,6 +46,12 @@ void ImageProxy::fetchMessages() {
     for(const std::string &msg : messaging()->receive("image_proxy")) {
         if(msg == "togglePlayMode") {
             playMode = playMode == PLAY ? STOP : PLAY;
+
+            if(displayMode == IMAGE_CHANNEL) {
+                // reset buffer index and future buffer
+                bufferIndex = 0;
+                futureBuffer.clear();
+            }
         } else if(msg == "nextImage") {
             if(displayMode == DIRECTORY && playMode == STOP) { // stop mode is manual mode
                 if(dirFilesIndex + 1 == dirFiles.size()) {
@@ -52,12 +60,28 @@ void ImageProxy::fetchMessages() {
                     dirFilesIndex++;
                 }
             }
+
+            if(displayMode == IMAGE_CHANNEL && playMode == STOP) {
+                if(bufferIndex + 1 > (int)futureBuffer.size()) {
+                    bufferIndex = futureBuffer.size();
+                } else {
+                    bufferIndex ++;
+                }
+            }
         } else if(msg == "previousImage") {
             if(displayMode == DIRECTORY && playMode == STOP) { // stop mode is manual mode
                 if(dirFilesIndex == 0) {
                     dirFilesIndex = dirFiles.size() - 1;
                 } else {
                     dirFilesIndex--;
+                }
+            }
+
+            if(displayMode == IMAGE_CHANNEL && playMode == STOP) {
+                if(bufferIndex - 1 <= - (int)historyBuffer.size()) {
+                    bufferIndex = - (int)historyBuffer.size();
+                } else {
+                    bufferIndex --;
                 }
             }
         } else if(msg == "changeDisplayMode") {
@@ -78,9 +102,35 @@ void ImageProxy::fetchMessages() {
 }
 
 void ImageProxy::imageChannelMode() {
+    if(inputImage->size() == 0) {
+        drawFailImage(*outputImage);
+        return;
+    } else {
+        if(playMode == STOP) {
+            // save current image in future buffer
+            if(futureBuffer.size() < maxBufferSize) {
+                futureBuffer.push_back(*inputImage);
+            }
+        } else {
+            // save current image in history buffer
+            historyBuffer.push_front(*inputImage);
+
+            if(historyBuffer.size() > maxBufferSize) {
+                historyBuffer.pop_back();
+            }
+        }
+    }
+
     // only if in live mode then copy the input image channel
     if(playMode == PLAY) {
         *outputImage = *inputImage;
+    } else {
+        // use image from ring buffer
+        if(bufferIndex <= 0) {
+            *outputImage = historyBuffer[- bufferIndex];
+        } else {
+            *outputImage = futureBuffer[bufferIndex - 1];
+        }
     }
 }
 
@@ -95,6 +145,7 @@ void ImageProxy::singleFileMode() {
     bool readRes = lms::imaging::readPNM(*outputImage, singleFile);
 
     if(! readRes) {
+        drawFailImage(*outputImage);
         logger.error("singleFileMode") << "Could not read image: " << singleFile;
     }
 }
@@ -125,6 +176,7 @@ void ImageProxy::directoryMode() {
     bool readRes = lms::imaging::readPNM(*outputImage, filePath);
 
     if(! readRes) {
+        drawFailImage(*outputImage);
         logger.error("directoryMode") << "Could not read image: " << filePath;
     }
 }
@@ -148,4 +200,12 @@ void ImageProxy::loadDirectory(const std::string &dir,
     closedir(fd);
 
     std::sort(files.begin(), files.end());
+}
+
+void ImageProxy::drawFailImage(lms::imaging::Image &image) {
+    if(image.size() == 0) {
+        image.resize(500, 500, lms::imaging::Format::GREY);
+    }
+
+    image.fill(255);
 }
