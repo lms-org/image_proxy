@@ -24,6 +24,8 @@ private:
         IMAGE_CHANNEL
     };
 
+    bool displayModeFromString(const std::string &s, DisplayMode &mode);
+
     enum PlayMode {
         // mode SINGLE_FILE: ignored
         // mode DIRECTORY: automatic playing mode (increment image index)

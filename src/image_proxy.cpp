@@ -12,7 +12,14 @@ bool ImageProxy::initialize() {
     outputImage = datamanager()
             ->writeChannel<lms::imaging::Image>(this, "OUTPUT_IMAGE");
 
-    displayMode = DIRECTORY;
+    std::string displayModeString = config->get<std::string>("displayMode");
+
+    if(! displayModeFromString(displayModeString, displayMode)) {
+        logger.warn("init") << "Invalid property displayMode: " <<
+                               displayModeString;
+        displayMode = IMAGE_CHANNEL;
+    }
+
     playMode = PLAY;
 
     maxBufferSize = config->get<int>("maxBufferSize", 1000);
@@ -208,4 +215,21 @@ void ImageProxy::drawFailImage(lms::imaging::Image &image) {
     }
 
     image.fill(255);
+}
+
+bool ImageProxy::displayModeFromString(const std::string &s, DisplayMode &mode) {
+    if(s == "SINGLE_FILE") {
+        mode = SINGLE_FILE;
+        return true;
+    }
+    if(s == "DIRECTORY") {
+        mode = DIRECTORY;
+        return true;
+    }
+    if(s == "IMAGE_CHANNEL") {
+        mode = IMAGE_CHANNEL;
+        return true;
+    }
+
+    return false;
 }
