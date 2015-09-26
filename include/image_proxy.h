@@ -54,7 +54,7 @@ private:
 
     const lms::imaging::Image *inputImage;
     lms::imaging::Image *outputImage;
-    const lms::type::ModuleConfig *config;
+    const lms::ModuleConfig *config;
 
     void imageChannelMode();
     void singleFileMode();
