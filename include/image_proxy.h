@@ -52,8 +52,8 @@ private:
     std::deque<lms::imaging::Image> futureBuffer;
     int bufferIndex;
 
-    const lms::imaging::Image *inputImage;
-    lms::imaging::Image *outputImage;
+    lms::ReadDataChannel<lms::imaging::Image> inputImage;
+    lms::WriteDataChannel<lms::imaging::Image> outputImage;
     const lms::ModuleConfig *config;
 
     void imageChannelMode();
