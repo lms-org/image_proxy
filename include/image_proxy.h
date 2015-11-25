@@ -54,7 +54,6 @@ private:
 
     lms::ReadDataChannel<lms::imaging::Image> inputImage;
     lms::WriteDataChannel<lms::imaging::Image> outputImage;
-    const lms::ModuleConfig *config;
 
     void imageChannelMode();
     void singleFileMode();

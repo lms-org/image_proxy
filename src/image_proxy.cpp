@@ -6,13 +6,10 @@
 #include "lms/imaging/pnm.h"
 
 bool ImageProxy::initialize() {
-    config = getConfig();
-    inputImage = datamanager()
-            ->readChannel<lms::imaging::Image>(this, "INPUT_IMAGE");
-    outputImage = datamanager()
-            ->writeChannel<lms::imaging::Image>(this, "OUTPUT_IMAGE");
+    inputImage = readChannel<lms::imaging::Image>("INPUT_IMAGE");
+    outputImage = writeChannel<lms::imaging::Image>("OUTPUT_IMAGE");
 
-    std::string displayModeString = config->get<std::string>("displayMode");
+    std::string displayModeString = config().get<std::string>("displayMode");
 
     if(! displayModeFromString(displayModeString, displayMode)) {
         logger.warn("init") << "Invalid property displayMode: " <<
@@ -22,7 +19,7 @@ bool ImageProxy::initialize() {
 
     playMode = PLAY;
 
-    maxBufferSize = config->get<int>("maxBufferSize", 1000);
+    maxBufferSize = config().get<int>("maxBufferSize", 1000);
 
     return true;
 }
@@ -142,7 +139,7 @@ void ImageProxy::imageChannelMode() {
 }
 
 void ImageProxy::singleFileMode() {
-    std::string singleFile = config->get<std::string>("singleFile");
+    std::string singleFile = config().get<std::string>("singleFile");
 
     if(singleFile.empty()) {
         logger.warn("singleFileMode") << "Property singleFile is not specified";
@@ -166,7 +163,7 @@ void ImageProxy::directoryMode() {
         }
     }
 
-    std::string newDirectory = config->get<std::string>("directory");
+    std::string newDirectory = config().get<std::string>("directory");
     if(newDirectory != directory) {
         directory = newDirectory;
 
