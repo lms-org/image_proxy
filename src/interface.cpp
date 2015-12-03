@@ -1,7 +1,3 @@
 #include "image_proxy.h"
 
-extern "C" {
-void* getInstance() {
-    return new ImageProxy();
-}
-}
+LMS_MODULE_INTERFACE(ImageProxy)
