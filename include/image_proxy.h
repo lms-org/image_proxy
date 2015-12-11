@@ -4,7 +4,6 @@
 #include <deque>
 
 #include "lms/module.h"
-#include "lms/datamanager.h"
 #include "lms/imaging/image.h"
 
 class ImageProxy : public lms::Module {
