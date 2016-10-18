@@ -47,6 +47,7 @@ bool ImageProxy::cycle() {
 }
 
 void ImageProxy::fetchMessages() {
+    /* TODO
     for(const std::string &msg : messaging()->receive("image_proxy")) {
         if(msg == "togglePlayMode") {
             playMode = playMode == PLAY ? STOP : PLAY;
@@ -103,6 +104,7 @@ void ImageProxy::fetchMessages() {
             }
         }
     }
+    */
 }
 
 void ImageProxy::imageChannelMode() {
